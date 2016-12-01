@@ -8,9 +8,35 @@ from datetime import datetime
 from jinja2 import Template
 import csv
 import pdfkit
+import platform
+
+MAC_ALIAS = 'macos'
+WIN_ALIAS = 'win'
+
+OS_MAPPING = {
+    'Darwin': MAC_ALIAS,
+    'Windows': WIN_ALIAS
+}
+
+ARCH_MAPPING = {
+    MAC_ALIAS: {
+        '64bit': '64'
+    },
+    WIN_ALIAS: {
+        '64bit': '64',
+        '32bit': '32'
+    }
+}
+
+OS = OS_MAPPING.get(platform.system(), None)
+ARCH = ARCH_MAPPING.get(OS, {}).get(platform.architecture()[0], None)
+if OS is None or ARCH is None:
+    print('ERROR: Unsupported system/architecture.')
+    sys.exit(1)
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
-
+BUNDLE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+WKHTMLTOPDF_PATH = os.path.join(BUNDLE_PATH, 'lib', OS, ARCH, 'wkhtmltopdf')
 
 # Template available at: http://codepen.io/maxdrift/pen/jVmqyg
 page_template = Template("""
@@ -173,15 +199,19 @@ def to_pdf(html_output, root_path, filename):
     pdf_filename = '%s.pdf' % os.path.splitext(filename)[0]
     full_output_path = os.path.join(root_path, pdf_filename)
     if Path(full_output_path).is_file():
-        print("PDF file already present, skipping...")
+        print('PDF file already present, skipping...')
         return
-    # pdfkit.configuration(wkhtmltopdf='./lib/macos/64/wkhtmltopdf')
-    pdfkit.from_string(html_output, os.path.abspath(full_output_path), options=options)
+    config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH.encode('utf-8'))
+    pdfkit.from_string(html_output, os.path.abspath(full_output_path), options=options, configuration=config)
 
 if __name__ == '__main__':
     exec_path = None
     if len(sys.argv) <= 1:
-        exec_path = os.path.dirname(sys.executable)
+        if IS_BUNDLED:
+            exec_path = os.path.dirname(sys.executable)
+        else:
+            print('ERROR: Please provide a CSV file or a directory.')
+            sys.exit(1)
     full_path = exec_path or sys.argv[1]
     if os.path.isdir(full_path):
         csv_files = [os.path.join(full_path, f) for f in listdir(full_path) if os.path.isfile(os.path.join(full_path, f)) and f.lower().endswith('.csv')]
