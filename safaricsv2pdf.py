@@ -21,6 +21,10 @@ page_template = Template("""
       font-family: "Times New Roman", Times, serif;
     }
 
+    .pb {
+      page-break-before: always;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -60,13 +64,8 @@ page_template = Template("""
       display: table-header-group;
     }
 
-    tfoot {
-      display: table-footer-group;
-    }
-
-    tfoot tr td {
-      border: none;
-      display: table-footer-group;
+    tr, td, th, tbody, thead {
+      page-break-inside: avoid !important;
     }
 
     .header-container {
@@ -183,13 +182,9 @@ if __name__ == '__main__':
     exec_path = None
     if len(sys.argv) <= 1:
         exec_path = os.path.dirname(sys.executable)
-        # print('Please provide a CSV file or directory.')
-        # sys.exit(1)
     full_path = exec_path or sys.argv[1]
-    print('cwd', full_path)
     if os.path.isdir(full_path):
         csv_files = [os.path.join(full_path, f) for f in listdir(full_path) if os.path.isfile(os.path.join(full_path, f)) and f.lower().endswith('.csv')]
-        print('HERE', csv_files)
     else:
         csv_files = [full_path]
     for f_path in csv_files:
