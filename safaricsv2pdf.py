@@ -11,6 +11,8 @@ import pdfkit
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
 
+
+# Template available at: http://codepen.io/maxdrift/pen/jVmqyg
 page_template = Template("""
 <html>
   <head>
