@@ -1,0 +1,12 @@
+# PyInstaller
+dist/
+build/
+
+# Data folder
+csv_data/
+
+# Pycache
+__pycache__/
+
+# libs
+lib/
