@@ -1,6 +1,4 @@
 VENV_FOLDER ?= .venv
-# VENV_BIN_FOLDER_UNIX ?= ${VENV_FOLDER}/bin
-# VENV_BIN_FOLDER_WIN ?= ${VENV_FOLDER}/Scripts
 ifeq ($(OS),Windows_NT)
 	VENV_BIN_FOLDER ?= ${VENV_FOLDER}\Scripts
 	VENV_ACTIVATE ?= ${VENV_BIN_FOLDER}\activate
@@ -19,7 +17,9 @@ EXAMPLES_FOLDER ?= examples
 python_version_full := $(wordlist 2,4,$(subst ., ,$(shell python --version 2>&1)))
 python_version_major := $(word 1,${python_version_full})
 
-.PHONY: all build-mac build-win check check.python.2 check.python.3 clean clean-all clean-pyc deps examples list venv
+.PHONY: all build build-mac build-win check check.python.2 check.python.3 clean clean-all clean-pyc deps examples \
+		list unix.build unix.clean unix.clean-all unix.clean-pyc unix.deps unix.examples venv win.build win.clean \
+		win.clean-all win.clean-pyc win.deps win.examples
 
 all:
 	@$(MAKE) -s build
@@ -37,20 +37,21 @@ check.python.3:
 check: check.python.${python_version_major}
 
 venv: check
+	@echo "Creating virtualenv..."
 	@${PYTHON} -m venv ${VENV_FOLDER}
 
-deps:
+deps: venv
+	@echo "Installing dependencies..."
 	@$(MAKE) -s ${OS_detected}.deps
 
-win.deps: venv
-	@echo "Win deps..."
+win.deps:
 	@${VENV_ACTIVATE} && pip install -qU -r requirements.txt
 
-unix.deps: venv
-	@echo "Unix deps..."
+unix.deps:
 	@source ${VENV_ACTIVATE} && pip install -qU -r requirements.txt
 
 build: deps
+	@echo "Building executable..."
 	@$(MAKE) -s ${OS_detected}.build && echo "Done."
 
 win.build:

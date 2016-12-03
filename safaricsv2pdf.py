@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
+import csv
 import os
+import platform
+import sys
 from os import listdir
 from pathlib import Path
-from datetime import datetime
-from jinja2 import Template
-import csv
+
 import pdfkit
-import platform
+from jinja2 import Template
 
 MAC_ALIAS = 'macos'
 WIN_ALIAS = 'win'
@@ -39,7 +39,6 @@ BUNDLE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)
 WKHTMLTOPDF_PATH = os.path.join(BUNDLE_PATH, 'lib', OS, ARCH, 'wkhtmltopdf')
 if OS == WIN_ALIAS:
     WKHTMLTOPDF_PATH = '.'.join([WKHTMLTOPDF_PATH, 'exe'])
-
 
 # Template available at: http://codepen.io/maxdrift/pen/jVmqyg
 page_template = Template("""
@@ -182,16 +181,18 @@ def read_from_csv(url):
         csvdata = csv.reader(csvfile, delimiter=';')
         return [data for data in csvdata if len(data) > 0]
 
-def to_html(root_path, filename, csv_data):
+
+def to_html(filename, csv_data):
     name, ext = os.path.splitext(filename)
-    names = [n.capitalize() for n in name.split('_')]
+    names = [str(n.capitalize()) for n in name.split('_')]
     full_name = ' '.join(names)
     rows = [row for row in csv_data if len(row) == 5 and len(row[0]) > 0]
     html_output = page_template.render(
-      comp_name=full_name,
-      rows=rows
+        comp_name=full_name,
+        rows=rows
     )
     return html_output
+
 
 def to_pdf(html_output, root_path, filename):
     options = {
@@ -207,6 +208,7 @@ def to_pdf(html_output, root_path, filename):
     config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH.encode('utf-8'))
     pdfkit.from_string(html_output, os.path.abspath(full_output_path), options=options, configuration=config)
 
+
 if __name__ == '__main__':
     exec_path = None
     if len(sys.argv) <= 1:
@@ -217,11 +219,12 @@ if __name__ == '__main__':
             sys.exit(1)
     full_path = exec_path or sys.argv[1]
     if os.path.isdir(full_path):
-        csv_files = [os.path.join(full_path, f) for f in listdir(full_path) if os.path.isfile(os.path.join(full_path, f)) and f.lower().endswith('.csv')]
+        csv_files = [os.path.join(full_path, f) for f in listdir(full_path) if
+                     os.path.isfile(os.path.join(full_path, f)) and f.lower().endswith('.csv')]
     else:
         csv_files = [full_path]
     for f_path in csv_files:
-        root_path, filename = os.path.split(f_path)
-        csv_data = read_from_csv(f_path)
-        html = to_html(f_path, filename, csv_data)
-        to_pdf(html, root_path, filename)
+        r_path, fname = os.path.split(f_path)
+        csv_d = read_from_csv(f_path)
+        html = to_html(fname, csv_d)
+        to_pdf(html, r_path, fname)
