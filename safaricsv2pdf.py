@@ -37,6 +37,9 @@ if OS is None or ARCH is None:
 IS_BUNDLED = getattr(sys, 'frozen', False)
 BUNDLE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
 WKHTMLTOPDF_PATH = os.path.join(BUNDLE_PATH, 'lib', OS, ARCH, 'wkhtmltopdf')
+if OS == WIN_ALIAS:
+    WKHTMLTOPDF_PATH = '.'.join([WKHTMLTOPDF_PATH, 'exe'])
+
 
 # Template available at: http://codepen.io/maxdrift/pen/jVmqyg
 page_template = Template("""

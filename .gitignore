@@ -2,8 +2,11 @@
 dist/
 build/
 
-# Data folder
-csv_data/
-
 # Pycache
 __pycache__/
+
+# Virtualenv
+.venv/
+
+# Any generated PDFs
+*.pdf
