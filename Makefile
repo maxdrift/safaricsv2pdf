@@ -3,18 +3,19 @@ ifeq ($(OS),Windows_NT)
 	VENV_BIN_FOLDER ?= ${VENV_FOLDER}\Scripts
 	VENV_ACTIVATE ?= ${VENV_BIN_FOLDER}\activate
 	VENV_PYTHON ?= ${VENV_BIN_FOLDER}\python
+	PYTHON ?= python
 	OS_detected := win
 else
 	VENV_BIN_FOLDER ?= ${VENV_FOLDER}/bin
 	VENV_ACTIVATE ?= ${VENV_BIN_FOLDER}/activate
-	VENV_PYTHON ?= ${VENV_BIN_FOLDER}/python
+	VENV_PYTHON ?= ${VENV_BIN_FOLDER}/python3
+	PYTHON ?= python3
 	OS_detected := unix
 endif
-PYTHON ?= python
 
 PYTHON_SCRIPT ?= safaricsv2pdf.py
 EXAMPLES_FOLDER ?= examples
-python_version_full := $(wordlist 2,4,$(subst ., ,$(shell python --version 2>&1)))
+python_version_full := $(wordlist 2,4,$(subst ., ,$(shell ${PYTHON} --version 2>&1)))
 python_version_major := $(word 1,${python_version_full})
 
 .PHONY: all build build-mac build-win check check.python.2 check.python.3 clean clean-all clean-pyc deps examples \
@@ -52,7 +53,9 @@ unix.deps:
 
 build: deps
 	@echo "Building executable..."
-	@$(MAKE) -s ${OS_detected}.build && echo "Done."
+	@$(MAKE) -s ${OS_detected}.build
+	@echo "Done."
+	@exit 0
 
 win.build:
 	@${VENV_ACTIVATE} && pyinstaller --clean --log-level ERROR safaricsv2pdf.win.spec
